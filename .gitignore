@@ -1,0 +1,18 @@
+# drafts, not part of the repo
+*-post.md
+notes/
+
+# reports the scripts write to the current folder
+diagnose-*.txt
+space-*.txt
+icloud-*.txt
+network-*.txt
+
+# macOS, Dropbox and exFAT clutter
+.DS_Store
+._*
+
+# compressed
+*.zip
+*.rar
+
