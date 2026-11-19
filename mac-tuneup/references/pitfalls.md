@@ -51,6 +51,32 @@ before fixing.
   (~50 GB), data of uninstalled JetBrains IDEs (17 GB), an unused browser
   (7 GB), developer caches (6 GB). Result: 40 GB free (9%) to 95 GB (21%).
 
+## "Claude removed Apple's throttling": what is real
+
+Viral posts claim an agent "patched the power management profiles, cleared the
+related caches and disabled the forced limits" on an old Intel MacBook, which
+then ran faster, cooler and longer on battery. Checked against how Macs work:
+
+- **Apple has not said Macs get slower with age.** The 2017 battery throttling
+  statement and settlement were about iPhones.
+- **The power management profiles are system files.** Since Big Sur they live
+  on the signed, sealed system volume; changing them means turning off SIP and
+  authenticated root, which weakens security and breaks with updates.
+  Heat-based limits are enforced by the SMC and the CPU itself anyway.
+- **There is no throttling cache to clear.**
+- **Faster, cooler and longer battery at the same time contradicts removing
+  limits.** More speed means more power and more heat. When all three improve,
+  something else changed: a runaway process stopped, a restart, cleaned vents,
+  a different charger.
+- **What is real:** thermal throttling (`pmset -g therm`, `kernel_task` taking
+  CPU on purpose to cool the Mac) and, on 2013-2016 Intel MacBooks, BD PROCHOT:
+  a hardware warning line that pins the CPU near 800 MHz, usually from a worn
+  battery, a non-Apple or damaged charger, the charging port or a sensor. Tools
+  that switch BD PROCHOT off hide the warning instead of fixing it.
+- **What helps:** measure with `throttle-check.sh`; clean fans and vents and
+  renew thermal paste on old Macs; original charger; battery service when its
+  condition says so; SMC reset on Intel; stop the process causing the load.
+
 ## The routined crash loop
 
 `ReportCrash` and `coresymbolicationd` at the top of the CPU list on an idle

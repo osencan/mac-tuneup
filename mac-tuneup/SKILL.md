@@ -8,7 +8,7 @@ description: Diagnose and fix a slow Mac, a nearly full disk or nearly full iClo
 Find out with measurements why a Mac is slow or full, tell the user what
 matters most and give them small scripts they run themselves. Three Macs
 tuned with this method had three different main causes (a Fusion Drive plus a
-crash-looping daemon, too many apps open for the RAM, a full disk), so never
+crash-looping daemon, too little RAM for the open apps, a full disk), so never
 fix before measuring.
 
 ## Ground rules
@@ -22,6 +22,12 @@ fix before measuring.
   Settings changes take `--undo` and record the previous value.
 - **Never disable** security updaters, Spotlight, Gatekeeper, SIP or FileVault,
   and never erase, partition or reformat a disk.
+- **Never remove thermal or power protections.** Do not patch power
+  management profiles or kexts, write CPU registers (for example to turn off
+  BD PROCHOT), or disable the sealed system volume to "unlock" speed.
+  Throttling from heat or a hardware warning is a symptom: find and fix the
+  cause. Treat "Claude removed Apple's throttling" stories as claims to test,
+  not recipes (see `references/pitfalls.md`).
 - **Be honest about the gain.** Say when a fix helps only a little, and correct
   yourself in the README when a finding turns out wrong.
 
@@ -51,6 +57,12 @@ available offline.
      Access first). Use `xcrun simctl runtime list` for simulator sizes.
    - Memory: name the apps; compressor over ~3 GB, swap over ~2 GB or
      out-of-memory kills mean pressure (check the JetsamEvent `reason`).
+   - Throttling suspected (CPU_Speed_Limit below 100, busy `kernel_task`,
+     loud fans, an older Intel MacBook stuck slow): `scripts/throttle-check.sh`
+     (sudo, read-only). It measures frequency, temperature, thermal pressure,
+     charger and battery, and names the pattern: heat (clean vents/fans,
+     paste, load), BD PROCHOT on Intel (battery, charger, port, sensor; SMC
+     reset) or no throttling at all.
    - A daemon crashing every few minutes (`ReportCrash`/`coresymbolicationd`
      busy, many `.ips` files for one process): read the backtrace.
 4. **Ask.** One question per area with sizes and a recommended option

@@ -96,6 +96,19 @@ Write a guide script: print the numbers, open the pane
 `--check` mode that measures whether it worked (for example: no crash report
 newer than the change).
 
+## Throttling (measure, then fix the cause)
+
+Never script around a protection. After `throttle-check.sh`:
+- Heat: guide the user to clean vents and fans (older Macs: thermal paste by a
+  repair shop), use a hard flat surface and stop the process causing load.
+- BD PROCHOT pattern on Intel (low frequency, CPU not hot): test with the
+  original Apple charger, compare on battery vs charger, check battery
+  condition, then an SMC reset (Apple's steps differ per model: Macs with T2
+  chip vs older; Apple silicon has no SMC reset, a restart does it).
+- Low Power Mode on: say it caps performance on purpose; switching it off is
+  the user's choice (Battery settings).
+Re-run `throttle-check.sh` afterwards and compare the numbers.
+
 ## Verify pass
 
 After the user ran the fixes, write a read-only verify script: every removed

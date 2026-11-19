@@ -40,6 +40,9 @@ system_profiler SPPowerDataType 2>/dev/null \
   | grep -E "Cycle Count|Condition|Maximum Capacity|Wattage|Charging:|Connected:" | ind
 pmset -g therm | grep -v "^Note" | ind
 echo "  (CPU_Speed_Limit below 100 or a thermal warning = the Mac is throttling)"
+[ "$(uname -m)" = x86_64 ] && sysctl machdep.xcpm.cpu_thermal_level 2>/dev/null | ind
+echo "  If it feels throttled (limit below 100, kernel_task busy, fans loud, or an older"
+echo "  Intel MacBook stuck slow): run throttle-check.sh for frequency, temperature and cause."
 
 # ------------------------------------------------------------------ memory
 RAMGB=$(( $(sysctl -n hw.memsize) / 1073741824 ))

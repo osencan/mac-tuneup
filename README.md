@@ -4,7 +4,7 @@ A Claude skill and a set of read-only scripts to find out **why** a Mac is
 slow or full, fix it safely and free iCloud storage by moving Photos to an
 external disk with verified deletion.
 
-Built while tuning three different type of Macs. Each had a different main cause:
+Built while tuning three Macs. Each had a different main cause:
 
 | Mac | Main cause | What fixed it |
 |-----|------------|---------------|
@@ -24,6 +24,7 @@ mac-tuneup/
     space-detail.sh              read-only: where the disk space went
     icloud-report.sh             read-only: what fills iCloud
     network-check.sh             read-only: why iCloud downloads fail
+    throttle-check.sh            read-only (sudo): is the Mac throttling, and why
     keep-awake.sh                sleep off for long jobs, with --undo
     photos-albums-verify.sh      albums per year, verify export, retry missing
     photos-delete-verified.sh    delete only items verified on disk (name + exact size)
@@ -35,12 +36,21 @@ mac-tuneup/
 ## Install
 
 - **Claude Code:** `cp -r mac-tuneup ~/.claude/skills/`
-- **Claude apps:** zip the skill folder (`zip -r mac-tuneup.zip mac-tuneup`)
-  and upload the zip in Settings > Capabilities > Skills.
+- **Claude apps:** download `mac-tuneup.zip` from the latest Release and upload it in
+  Settings > Capabilities > Skills (or zip the inner `mac-tuneup` folder yourself:
+  `zip -r mac-tuneup.zip mac-tuneup`).
 - **Without Claude:** run the read-only scripts yourself:
   `bash mac-tuneup/scripts/diagnose.sh`. Reports are written to the current folder.
 
 Then ask: "My Mac is slow, use mac-tuneup" or "iCloud is almost full".
+
+## What it will not do
+
+Patch power management profiles, write CPU registers or disable SIP to
+"remove Apple's throttling". Heat and hardware-warning throttling are
+measured and traced to their cause (dust, paste, battery, charger, load).
+`references/pitfalls.md` explains why the viral "faster, cooler and longer
+battery" story does not add up.
 
 ## Safety
 
