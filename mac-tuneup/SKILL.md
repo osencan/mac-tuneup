@@ -55,6 +55,11 @@ available offline.
 3. **Dig where it matters.**
    - Disk under ~20% free: `scripts/space-detail.sh` (give Terminal Full Disk
      Access first). Use `xcrun simctl runtime list` for simulator sizes.
+   - Apple's own media apps: `scripts/apple-media-cleanup.sh` reports the
+     re-downloadable data of Podcasts (episodes), Music, TV and Books
+     (caches), GarageBand/Logic sound libraries and iPhone update files;
+     `--apply` moves chosen groups to the Trash with a y/N each. It leaves
+     libraries, downloads mixed with the user's own files and backups alone.
    - Memory: name the apps; compressor over ~3 GB, swap over ~2 GB or
      out-of-memory kills mean pressure (check the JetsamEvent `reason`).
    - Throttling suspected (CPU_Speed_Limit below 100, busy `kernel_task`,

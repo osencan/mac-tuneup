@@ -26,6 +26,7 @@ mac-tuneup/
     network-check.sh             read-only: why iCloud downloads fail
     throttle-check.sh            read-only (sudo): is the Mac throttling, and why
     dethrottle.sh                report, or switch off (with undo) Low Power Mode, App Nap, background disk throttling
+    apple-media-cleanup.sh       report, or move to the Trash (y/N per group) re-downloadable data of Podcasts, Music, TV, Books, GarageBand
     keep-awake.sh                sleep off for long jobs, with --undo
     photos-albums-verify.sh      albums per year, verify export, retry missing
     photos-delete-verified.sh    delete only items verified on disk (name + exact size)
