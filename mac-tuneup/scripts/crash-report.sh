@@ -12,7 +12,8 @@
 #
 # Reads ~/Library/Logs/DiagnosticReports and /Library/Logs/DiagnosticReports.
 # macOS deletes old reports itself, so long periods may be incomplete.
-# Out-of-memory kills (JetsamEvent) are in diagnose.sh, not here.
+# Also lists slow shutdowns (decoded with spindump), hang reports and kernel
+# panics. Out-of-memory kills (JetsamEvent) are in diagnose.sh, not here.
 
 DAYS="${1:-7}"
 MIN="${MIN:-3}"
@@ -175,6 +176,43 @@ while IFS="$US" read -r n _d _first last name kind path resp coal bid exc _file;
   printf "  %4s x  %-34s %s (last %s)\n" "$n" "${name:0:34}" "$LABEL" "$(when "$last")"
 done < "$TMP/agg"
 [ "$found" = 1 ] || echo "  none"
+
+# ------------------------------------------------------------------ stalls and panics
+hdr "4. Slow shutdowns, hangs and kernel panics"
+# a shutdownStall report is a binary sample of what was still running 2 s into
+# a slow shutdown or restart; spindump turns it into text (no admin needed)
+stalls=$(find "${DR[@]}" -maxdepth 1 -type f -mtime "-$DAYS" -name "*.shutdownStall" 2>/dev/null)
+if [ -z "$stalls" ]; then
+  echo "  slow shutdowns: none"
+else
+  printf '%s\n' "$stalls" | while IFS= read -r f; do
+    # the file is often written hours later, so take the time from its name
+    ts=$(basename "$f" | sed -nE 's/.*[0-9]{4}-([0-9]{2}-[0-9]{2})-([0-9]{2})([0-9]{2})[0-9]{2}.*/\1 \2:\3/p')
+    echo "  slow shutdown or restart on ${ts:-$(when "$(stat -f %m "$f")")}"
+    if ! perl -e 'alarm shift; exec @ARGV' 120 spindump -i "$f" -o "$TMP/stall.txt" >/dev/null 2>&1; then
+      echo "     could not be decoded; open it with: spindump -i \"$f\""; continue
+    fi
+    awk '/^Process:/{p=$2} /^Path:/{sub(/^Path: */, ""); print p "\t" $0}' "$TMP/stall.txt" > "$TMP/stallprocs"
+    echo "     still running at that moment: $(wc -l < "$TMP/stallprocs" | tr -d ' ') processes"
+    other=0
+    while IFS=$'\t' read -r p pth; do
+      is_apple "$pth" && continue
+      other=1; echo "     NOT part of macOS, may have held it up: $p ($pth)"
+    done < "$TMP/stallprocs"
+    [ "$other" = 1 ] || echo "     all of them part of macOS: no app held it up. One slow shutdown is normal; many are not."
+    rm -f "$TMP/stall.txt"
+  done
+fi
+hangs=$(grep -cE "\.(hang|spin)$" "$TMP/all")
+echo "  apps reported as not responding (hang or spin reports): $hangs$([ "$hangs" -gt 0 ] && echo ", listed in section 1")"
+panics=$(find "${DR[@]}" -maxdepth 1 -type f -mtime "-$DAYS" -iname "*panic*" 2>/dev/null)
+if [ -z "$panics" ]; then
+  echo "  kernel panics (the whole Mac restarting by itself): none"
+else
+  echo "  kernel panics (the whole Mac restarting by itself):"
+  printf '%s\n' "$panics" | while IFS= read -r f; do echo "     $(when "$(stat -f %m "$f")")  $f"; done
+  echo "     Repeated panics point at hardware, a kernel extension or a driver: show the file to Apple Support."
+fi
 
 echo
 echo "Report finished $(date '+%H:%M:%S'). Saved to: $OUT"
