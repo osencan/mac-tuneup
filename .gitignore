@@ -8,6 +8,7 @@ space-*.txt
 icloud-*.txt
 network-*.txt
 throttle-*.txt
+crashes-*.txt
 
 # macOS, Dropbox and exFAT clutter
 .DS_Store

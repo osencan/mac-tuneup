@@ -24,6 +24,7 @@ mac-tuneup/
     space-detail.sh              read-only: where the disk space went
     icloud-report.sh             read-only: what fills iCloud
     network-check.sh             read-only: why iCloud downloads fail
+    crash-report.sh              read-only: what keeps crashing, which app or extension owns it, what to do
     throttle-check.sh            read-only (sudo): is the Mac throttling, and why
     dethrottle.sh                report, or switch off (with undo) Low Power Mode, App Nap, background disk throttling
     apple-media-cleanup.sh       report, or move to the Trash (y/N per group) re-downloadable data of Podcasts, Music, TV, Books, GarageBand

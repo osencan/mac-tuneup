@@ -73,6 +73,12 @@ available offline.
      `--apply` switches chosen ones off with a y/N each, `--undo` restores.
      These are the only "dethrottling" the skill does. Battery health
      management only changes charging, not CPU speed (Apple).
+   - Repeat crashers (section 8 of the diagnosis): `scripts/crash-report.sh`
+     (`30` for 30 days) names the owner of each crashing process: app,
+     helper, app extension (Quick Look, thumbnail, share), or a part of macOS
+     and the app it was working for; whether the program is still installed;
+     and what to do. Resource reports (cpu usage, disk writes) are listed
+     apart from crashes.
    - A daemon crashing every few minutes (`ReportCrash`/`coresymbolicationd`
      busy, many `.ips` files for one process): read the backtrace.
 4. **Ask.** One question per area with sizes and a recommended option
