@@ -59,10 +59,15 @@ if [ "$ARCH" = x86_64 ]; then
     | sed 's/^ */  /' | head -60
 else
   # Apple silicon: summarise instead of 40 raw lines
-  mx() { grep "$1" "/tmp/pm-$$.txt" | grep -oE "[0-9]+ (MHz|mW)" | awk '{print $1}' | sort -n | tail -1; }
-  echo "  highest P-core cluster frequency: $(mx 'P-Cluster HW active frequency') MHz"
-  echo "  highest E-core cluster frequency: $(mx 'E-Cluster HW active frequency') MHz"
-  echo "  highest CPU power:                $(mx 'CPU Power') mW"
+  # Cluster labels vary by chip: "P-Cluster" on base chips, "P0-Cluster" and
+  # "P1-Cluster" on Pro/Max chips, so the digit is optional. No match prints n/a.
+  mx() {
+    v=$(grep -E "$1" "/tmp/pm-$$.txt" | grep -oE "[0-9]+ (MHz|mW)" | awk '{print $1}' | sort -n | tail -1)
+    if [ -n "$v" ]; then echo "$v $2"; else echo "n/a"; fi
+  }
+  echo "  highest P-core cluster frequency: $(mx 'P[0-9]*-Cluster HW active frequency' MHz)"
+  echo "  highest E-core cluster frequency: $(mx 'E[0-9]*-Cluster HW active frequency' MHz)"
+  echo "  highest CPU power:                $(mx 'CPU Power' mW)"
   echo "  thermal pressure per sample:      $(grep -i 'pressure level' "/tmp/pm-$$.txt" | awk -F': ' '{print $2}' | sort | uniq -c | awk '{printf "%s x%s  ", $2, $1}')"
   echo "  (idle samples show 0 MHz; run something heavy during the check to see the peak)"
 fi
