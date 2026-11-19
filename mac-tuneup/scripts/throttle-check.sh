@@ -31,7 +31,12 @@ hdr "Power source, charger, battery"
 pmset -g batt | sed 's/^/  /'
 system_profiler SPPowerDataType 2>/dev/null \
   | grep -E "Cycle Count|Condition|Maximum Capacity|Full Charge Capacity|Wattage|Connected:|Charging:" | sed 's/^ */  /'
-pmset -g | grep -iE "lowpowermode|powermode" | sed 's/^ */  /'
+echo "  Energy mode per power source (1 in lowpowermode, or powermode 1 = Low Power: a deliberate slowdown):"
+for sec in "AC Power" "Battery Power"; do
+  pmset -g custom 2>/dev/null | awk -v sec="$sec" 'index($0, sec ":") == 1 {f=1; next} /Power:$/ {f=0}
+    f && ($1 == "lowpowermode" || $1 == "powermode") {print "    " sec ": " $1 " " $2}'
+done
+LPM_NOW=$(pmset -g 2>/dev/null | awk '$1 == "lowpowermode" || $1 == "powermode" {if ($2 == 1) print 1}' | head -1)
 
 hdr "macOS thermal limits (pmset -g therm)"
 pmset -g therm | sed 's/^/  /'
@@ -49,8 +54,18 @@ if ! sudo powermetrics --samplers "$SAMPLERS" -i 1000 -n 10 2>/dev/null > "/tmp/
   # shellcheck disable=SC2024
   sudo powermetrics -i 1000 -n 10 2>/dev/null > "/tmp/pm-$$.txt"
 fi
-grep -iE "average frequency|HW active frequency|die temperature|^Fan|thermal level|plimit|prochot|pressure level|package power|CPU Power" "/tmp/pm-$$.txt" \
-  | sed 's/^ */  /' | awk '!seen[$0]++' | head -60
+if [ "$ARCH" = x86_64 ]; then
+  grep -iE "average frequency|die temperature|^Fan|thermal level|plimit|prochot|package power" "/tmp/pm-$$.txt" \
+    | sed 's/^ */  /' | head -60
+else
+  # Apple silicon: summarise instead of 40 raw lines
+  mx() { grep "$1" "/tmp/pm-$$.txt" | grep -oE "[0-9]+ (MHz|mW)" | awk '{print $1}' | sort -n | tail -1; }
+  echo "  highest P-core cluster frequency: $(mx 'P-Cluster HW active frequency') MHz"
+  echo "  highest E-core cluster frequency: $(mx 'E-Cluster HW active frequency') MHz"
+  echo "  highest CPU power:                $(mx 'CPU Power') mW"
+  echo "  thermal pressure per sample:      $(grep -i 'pressure level' "/tmp/pm-$$.txt" | awk -F': ' '{print $2}' | sort | uniq -c | awk '{printf "%s x%s  ", $2, $1}')"
+  echo "  (idle samples show 0 MHz; run something heavy during the check to see the peak)"
+fi
 
 # numbers for the verdict
 FRAC=$(grep -oE "fraction of nominal: [0-9.]+" "/tmp/pm-$$.txt" | awk '{s+=$4; n++} END{if (n) printf "%.0f", s/n}')
@@ -58,10 +73,16 @@ TEMP=$(grep -iE "CPU die temperature" "/tmp/pm-$$.txt" | grep -oE "[0-9.]+ C" | 
 PRESS=$(grep -i "pressure level" "/tmp/pm-$$.txt" | awk -F: '{print $2}' | sort | uniq -c | sort -rn | head -1 | awk '{print $2}')
 LIMIT=$(pmset -g therm | grep -oE "CPU_Speed_Limit *= *[0-9]+" | grep -oE "[0-9]+$")
 KT=$(top -l 3 -s 2 -stats command,cpu 2>/dev/null | awk '$1=="kernel_task"{v=$2} END{printf "%.0f", v}')
+WATT=$(system_profiler SPPowerDataType 2>/dev/null | awk -F': ' '/Wattage/{print int($2); exit}')
+MODEL=$(system_profiler SPHardwareDataType 2>/dev/null | awk -F': ' '/Model Name/{print $2; exit}')
 rm -f "/tmp/pm-$$.txt"
 
 hdr "Verdict (pattern matching, not a diagnosis)"
-echo "  avg frequency vs nominal: ${FRAC:-n/a}%   CPU die temp: ${TEMP:-n/a} C   thermal pressure: ${PRESS:-n/a}"
+if [ "$ARCH" = x86_64 ]; then
+  echo "  avg frequency vs nominal: ${FRAC:-n/a}%   CPU die temp: ${TEMP:-n/a} C"
+else
+  echo "  thermal pressure (most samples): ${PRESS:-n/a}"
+fi
 echo "  CPU_Speed_Limit: ${LIMIT:-not reported}   kernel_task now: ${KT:-0}%"
 BDPROCHOT=0
 if [ "$ARCH" = x86_64 ] && [ -n "$FRAC" ] && [ "$FRAC" -lt 45 ] && [ -n "$TEMP" ] && [ "$TEMP" -lt 75 ]; then
@@ -97,6 +118,17 @@ else
      cause is elsewhere: run diagnose.sh (memory pressure, disk space, startup
      items, crash loops) and sample again under the load that feels slow.
 EOF
+fi
+
+if [ -n "$WATT" ] && [ "$WATT" -lt 60 ] && [[ "$MODEL" == *"MacBook Pro"* ]]; then
+  echo "  Note: the charger delivers ${WATT} W. Under sustained heavy load a MacBook Pro"
+  echo "  can draw more, so the battery drains while plugged in. Not throttling, but use"
+  echo "  the original (higher-wattage) charger for long heavy jobs."
+fi
+
+if [ "$LPM_NOW" = 1 ]; then
+  echo "  Note: Low Power Mode is ON for the current power source. That is a deliberate"
+  echo "  slowdown to save energy, not throttling. dethrottle.sh can switch it off (with undo)."
 fi
 
 echo

@@ -25,6 +25,7 @@ mac-tuneup/
     icloud-report.sh             read-only: what fills iCloud
     network-check.sh             read-only: why iCloud downloads fail
     throttle-check.sh            read-only (sudo): is the Mac throttling, and why
+    dethrottle.sh                report, or switch off (with undo) Low Power Mode, App Nap, background disk throttling
     keep-awake.sh                sleep off for long jobs, with --undo
     photos-albums-verify.sh      albums per year, verify export, retry missing
     photos-delete-verified.sh    delete only items verified on disk (name + exact size)
@@ -47,7 +48,9 @@ Then ask: "My Mac is slow, use mac-tuneup" or "iCloud is almost full".
 ## What it will not do
 
 Patch power management profiles, write CPU registers or disable SIP to
-"remove Apple's throttling". Heat and hardware-warning throttling are
+"remove Apple's throttling". The slowdowns macOS applies on purpose to save
+energy (Low Power Mode, App Nap, background disk throttling) are reported and
+can be switched off with an undo; protections are not. Heat and hardware-warning throttling are
 measured and traced to their cause (dust, paste, battery, charger, load).
 `references/pitfalls.md` explains why the viral "faster, cooler and longer
 battery" story does not add up.

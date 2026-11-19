@@ -23,14 +23,10 @@
 # Settings (environment variables):
 #   BACKUP_DIR        required: folder on the backup disk, e.g. "/Volumes/MyDisk/icloud-backup"
 #   SCREENSHOTS_UNTIL last year whose screenshots move (default: last year)
-[ -n "$BACKUP_DIR" ] || { echo 'Set BACKUP_DIR first, e.g.: export BACKUP_DIR="/Volumes/MyDisk/icloud-backup"'; exit 1; }
-case "$BACKUP_DIR" in /Volumes/*) VOL="/Volumes/$(echo "${BACKUP_DIR#/Volumes/}" | cut -d/ -f1)" ;; *) VOL="$BACKUP_DIR" ;; esac
-[ -d "$VOL" ] || { echo "The backup disk ($VOL) is not connected."; exit 1; }
-mkdir -p "$BACKUP_DIR" || { echo "Cannot write to $BACKUP_DIR"; exit 1; }
-BASE="$BACKUP_DIR"
-UNTIL="${SCREENSHOTS_UNTIL:-$(( $(date +%Y) - 1 ))}"
-LOGS="$BASE/_logs"
 MB100=104857600
+BASE="$BACKUP_DIR"
+LOGS="$BASE/_logs"
+UNTIL="${SCREENSHOTS_UNTIL:-$(( $(date +%Y) - 1 ))}"
 KIND="$1"
 case "$KIND" in
   videos)      DEST="$BASE/photos/videos-100MB-plus" ;;
@@ -38,6 +34,10 @@ case "$KIND" in
   years)       DEST="$BASE/photos/years" ;;
   *) grep '^#   bash' "$0" | sed 's/^#//'; exit 1 ;;
 esac
+[ -n "$BACKUP_DIR" ] || { echo 'Set BACKUP_DIR first, e.g.: export BACKUP_DIR="/Volumes/MyDisk/icloud-backup"'; exit 1; }
+case "$BACKUP_DIR" in /Volumes/*) VOL="/Volumes/$(echo "${BACKUP_DIR#/Volumes/}" | cut -d/ -f1)" ;; *) VOL="$BACKUP_DIR" ;; esac
+[ -d "$VOL" ] || { echo "The backup disk ($VOL) is not connected."; exit 1; }
+mkdir -p "$BACKUP_DIR" || { echo "Cannot write to $BACKUP_DIR"; exit 1; }
 [ -d "$DEST" ] || { echo "Not found: $DEST (nothing exported there yet?)"; exit 1; }
 command -v swift >/dev/null || { echo "swift not found (needs Xcode or its command line tools)."; exit 1; }
 

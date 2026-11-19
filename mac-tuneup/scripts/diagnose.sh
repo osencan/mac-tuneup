@@ -36,6 +36,7 @@ echo "  booted: $(sysctl -n kern.boottime | sed -E 's/.*} //')"
 hdr "2. Power, battery, throttling"
 pmset -g batt | ind
 pmset -g | grep -iE "lowpowermode|powermode" | ind
+echo "  (energy-saving slowdowns per power source, App Nap, background disk throttling: dethrottle.sh)"
 system_profiler SPPowerDataType 2>/dev/null \
   | grep -E "Cycle Count|Condition|Maximum Capacity|Wattage|Charging:|Connected:" | ind
 pmset -g therm | grep -v "^Note" | ind

@@ -63,6 +63,11 @@ available offline.
      charger and battery, and names the pattern: heat (clean vents/fans,
      paste, load), BD PROCHOT on Intel (battery, charger, port, sensor; SMC
      reset) or no throttling at all.
+   - Deliberate energy-saving slowdowns: `scripts/dethrottle.sh` reports Low
+     Power Mode per power source, App Nap and background disk throttling;
+     `--apply` switches chosen ones off with a y/N each, `--undo` restores.
+     These are the only "dethrottling" the skill does. Battery health
+     management only changes charging, not CPU speed (Apple).
    - A daemon crashing every few minutes (`ReportCrash`/`coresymbolicationd`
      busy, many `.ips` files for one process): read the backtrace.
 4. **Ask.** One question per area with sizes and a recommended option

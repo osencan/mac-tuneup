@@ -42,12 +42,13 @@ before fixing.
 
 ## Causes that mattered
 
-- **iMac 2019:** Fusion Drive with 90% of the data on the hard-disk part, plus
+- **iMac 2017:** Fusion Drive with 90% of the data on the hard-disk part, plus
   the `routined` crash loop (below). Fix: boot from an external SSD.
-- **MacBook Pro M1 Pro, 32 GB:** ~28 GB of apps open on 32 GB of RAM (editors
-  with several project windows, Chrome, AI apps, a sandbox VM). No setting
-  fixes that; closing windows, Chrome Memory Saver and weekly restarts do.
-- **MacBook Pro M3, 64 GB:** disk 91% full. Xcode simulator runtimes and caches
+- **MacBook Pro M1 Pro:** the open apps needed far more memory than the Mac
+  has (editors with several project windows, Chrome, AI apps, a sandbox VM).
+  No setting fixes that; closing windows, Chrome Memory Saver and weekly
+  restarts do. Be honest when a workload simply needs more RAM.
+- **MacBook Pro M3:** disk 91% full. Xcode simulator runtimes and caches
   (~50 GB), data of uninstalled JetBrains IDEs (17 GB), an unused browser
   (7 GB), developer caches (6 GB). Result: 40 GB free (9%) to 95 GB (21%).
 
@@ -76,6 +77,28 @@ then ran faster, cooler and longer on battery. Checked against how Macs work:
 - **What helps:** measure with `throttle-check.sh`; clean fans and vents and
   renew thermal paste on old Macs; original charger; battery service when its
   condition says so; SMC reset on Intel; stop the process causing the load.
+
+## Slowdowns macOS applies on purpose (the legitimate "dethrottle")
+
+- **Low Power Mode** (Battery settings, separately for battery and charger)
+  caps performance to save energy and, on newer Macs, fan noise. Easy to
+  leave on by accident for the charger. Macs with Power Modes also offer
+  High Power Mode on Pro/Max chips (louder fans, more sustained speed).
+- **App Nap** slows apps that are in the background and not visible. Fine for
+  battery, annoying for long background jobs. Can be disabled globally
+  (`defaults write -g NSAppSleepDisabled -bool YES`) or the app can ask for
+  activity itself; undo by deleting the key.
+- **Background disk (I/O) throttling** delays disk access of backups,
+  Spotlight and sync while you work. `sudo sysctl
+  debug.lowpri_throttle_enabled=0` turns it off until the next restart.
+  Eclectic Light found little if any benefit for Time Machine on Apple
+  silicon, and Spotlight can then swamp the disk. Use it for one long job, if at all.
+- **Battery health management** only lowers the maximum charge to slow battery
+  aging; Apple describes no effect on CPU speed. Nothing to unlock there.
+- **A battery in "Service Recommended" on an Intel MacBook** can cause hard
+  throttling (see BD PROCHOT above). That needs a battery, not a setting.
+- `dethrottle.sh` reports all of these and switches only the first three, with
+  a y/N each and `--undo`.
 
 ## The routined crash loop
 

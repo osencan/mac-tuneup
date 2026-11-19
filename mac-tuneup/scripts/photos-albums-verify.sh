@@ -32,12 +32,6 @@
 # Settings (environment variables):
 #   BACKUP_DIR        required: folder on the backup disk, e.g. "/Volumes/MyDisk/icloud-backup"
 #   SCREENSHOTS_UNTIL last year whose screenshots move (default: last year)
-[ -n "$BACKUP_DIR" ] || { echo 'Set BACKUP_DIR first, e.g.: export BACKUP_DIR="/Volumes/MyDisk/icloud-backup"'; exit 1; }
-case "$BACKUP_DIR" in /Volumes/*) VOL="/Volumes/$(echo "${BACKUP_DIR#/Volumes/}" | cut -d/ -f1)" ;; *) VOL="$BACKUP_DIR" ;; esac
-[ -d "$VOL" ] || { echo "The backup disk ($VOL) is not connected."; exit 1; }
-mkdir -p "$BACKUP_DIR" || { echo "Cannot write to $BACKUP_DIR"; exit 1; }
-BASE="$BACKUP_DIR"
-UNTIL="${SCREENSHOTS_UNTIL:-$(( $(date +%Y) - 1 ))}"
 VENV="$HOME/.local/share/osxphotos-venv"
 MB100=104857600
 
@@ -45,6 +39,12 @@ usage() { grep '^#   bash' "$0" | sed 's/^#//'; exit 1; }
 ACTION="$1"; KIND="$2"; shift 2 2>/dev/null
 case "$ACTION" in albums|verify|retry) ;; *) usage ;; esac
 case "$KIND" in videos|screenshots|years) ;; *) usage ;; esac
+[ -n "$BACKUP_DIR" ] || { echo 'Set BACKUP_DIR first, e.g.: export BACKUP_DIR="/Volumes/MyDisk/icloud-backup"'; exit 1; }
+case "$BACKUP_DIR" in /Volumes/*) VOL="/Volumes/$(echo "${BACKUP_DIR#/Volumes/}" | cut -d/ -f1)" ;; *) VOL="$BACKUP_DIR" ;; esac
+[ -d "$VOL" ] || { echo "The backup disk ($VOL) is not connected."; exit 1; }
+mkdir -p "$BACKUP_DIR" || { echo "Cannot write to $BACKUP_DIR"; exit 1; }
+BASE="$BACKUP_DIR"
+UNTIL="${SCREENSHOTS_UNTIL:-$(( $(date +%Y) - 1 ))}"
 
 if pgrep -f "bin/osxphotos" >/dev/null; then
   echo "Another osxphotos run is still active. Stop it first:  pkill -f bin/osxphotos"; exit 1
