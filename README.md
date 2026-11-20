@@ -85,6 +85,11 @@ macOS 13 or later, bash, Xcode or Command Line Tools for the delete helper
 `~/.local/share/osxphotos-venv`). Full Disk Access for Terminal for complete
 numbers.
 
+## Support
+
+If mac-tuneup saved you time or iCloud space, you can
+[sponsor it on GitHub](https://github.com/sponsors/osencan).
+
 ## License
 
 MIT. See LICENSE.
